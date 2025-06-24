@@ -1,0 +1,41 @@
+{
+  "name": "mmmdrinventariodeproductos",
+  "version": "1.0.0",
+  "main": "server.js",
+  "bin": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "build": "pkg . --targets latest-win-x64 --output miApi.exe"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-validator": "^7.2.1",
+    "mongodb": "^6.17.0",
+    "mongoose": "^8.16.0",
+    "path": "^0.12.7",
+    "validator": "^13.15.15"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "pkg": {
+    "assets": [
+      "index.html",
+      "config/**/*",
+      "controllers/**/*",
+      "models/**/*",
+      "routes/**/*",
+      ".env"
+    ],
+    "scripts": [
+      "node_modules/validator/*.js"
+    ]
+  }
+}

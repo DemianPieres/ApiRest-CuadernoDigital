@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestión de Productos</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <style id="app-style">
+    :root {
+      --background-color: #F7F5EB;
+      --primary-color: #4CAF50;
+      --text-color: #333;
+      --border-color: #DDD;
+      --hover-color: #45a049;
+      --error-color: #f44336;
+      --shadow-color: rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 15px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .search-container {
+      position: sticky;
+      top: 0;
+      background-color: var(--background-color);
+      padding: 15px 0;
+      z-index: 10;
+      box-shadow: 0 2px 5px var(--shadow-color);
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px;
+      font-family: 'Courier New', monospace;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 1rem;
+      background-color: white;
+    }
+
+    .product-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      box-shadow: 0 0 10px var(--shadow-color);
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .product-table th, .product-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .product-table th {
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: bold;
+    }
+
+    .product-table tr:hover {
+      background-color: rgba(76, 175, 80, 0.1);
+    }
+
+    .thumbnail {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .add-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: var(--primary-color);
+      color: white;
+      font-size: 24px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 8px var(--shadow-color);
+      transition: transform 0.3s, background-color 0.3s;
+    }
+
+    .add-button:hover {
+      background-color: var(--hover-color);
+      transform: scale(1.1);
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .pagination button {
+      margin: 0 5px;
+      padding: 8px 12px;
+      background-color: white;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      font-family: 'Courier New', monospace;
+    }
+
+    .pagination button.active {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .pagination button:hover:not(.active) {
+      background-color: #f1f1f1;
+    }
+
+    /* Form styles */
+    .form-container {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px var(--shadow-color);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px;
+      font-family: 'Courier New', monospace;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .form-control.error {
+      border-color: var(--error-color);
+    }
+
+    .error-message {
+      color: var(--error-color);
+      font-size: 0.875rem;
+      margin-top: 5px;
+    }
+
+    .image-preview {
+      margin-top: 10px;
+      width: 100%;
+      max-height: 200px;
+      object-fit: contain;
+      display: none;
+    }
+
+    .btn {
+      padding: 10px 15px;
+      font-family: 'Courier New', monospace;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-secondary {
+      background-color: #f1f1f1;
+      color: #333;
+    }
+
+    .btn-danger {
+      background-color: var(--error-color);
+      color: white;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      .product-table {
+        display: block;
+        overflow-x: auto;
+      }
+
+      .form-container {
+        padding: 15px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .add-button {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Products list view -->
+    <div id="products-view" class="container">
+      <header>
+        <h1>Inventario de Productos</h1>
+      </header>
+
+      <div class="search-container">
+        <input type="text" id="search-input" class="search-input" placeholder="Buscar por código o nombre...">
+      </div>
+
+      <div class="table-responsive">
+        <table class="product-table" id="products-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nombre</th>
+              <th>Categoría</th>
+              <th>Precio</th>
+              <th>Stock</th>
+              <th>Disponible</th>
+              <th>Imagen</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Products will be loaded here -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination" id="pagination">
+        <!-- Pagination will be generated here -->
+      </div>
+
+      <button id="add-product-btn" class="add-button">
+        <i class="fas fa-plus"></i>
+      </button>
+    </div>
+
+    <!-- Product form view -->
+    <div id="product-form-view" class="container" style="display: none;">
+      <header>
+        <h1 id="form-title">Nuevo Producto</h1>
+      </header>
+
+      <div class="form-container">
+        <form id="product-form">
+          <input type="hidden" id="product-id">
+
+          <div class="form-group">
+            <label for="code">Código:</label>
+            <input type="text" id="code" class="form-control" placeholder="01, 02..." required>
+            <div class="error-message" id="code-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="name">Nombre:</label>
+            <input type="text" id="name" class="form-control" required>
+            <div class="error-message" id="name-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="category">Categoría:</label>
+            <select id="category" class="form-control" required>
+              <option value="">Seleccionar categoría</option>
+              <option value="Electrónica">Luces</option>
+              <option value="Hogar">Accesorios</option>
+              <option value="Ropa">Lubricantes</option>
+              <option value="Alimentos">Repuestos</option>
+              <option value="Juguetes">Otro</option>
+            </select>
+            <div class="error-message" id="category-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="price">Precio:</label>
+            <input type="number" id="price" class="form-control" min="0" step="0.01" required>
+            <div class="error-message" id="price-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="image-url">URL de Imagen (opcional):</label> <!-- Cambiado a opcional -->
+            <input type="text" id="image-url" class="form-control">
+            <div class="error-message" id="image-url-error"></div>
+            <img id="image-preview" class="image-preview" alt="Vista previa de la imagen">
+          </div>
+
+          <div class="form-group">
+            <label for="stock">Stock:</label>
+            <input type="number" id="stock" class="form-control" min="0" required>
+            <div class="error-message" id="stock-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="available"> Disponible
+            </label>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn btn-primary" id="save-btn">Guardar</button>
+            <button type="button" class="btn btn-secondary" id="cancel-btn">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="delete-btn" style="display: none;">Eliminar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete confirmation modal -->
+    <div id="delete-modal" class="modal">
+      <div class="modal-content">
+        <h2 class="modal-title">Confirmar eliminación</h2>
+        <p>¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.</p>
+        <div class="modal-actions">
+          <button class="btn btn-danger" id="confirm-delete-btn">Eliminar</button>
+          <button class="btn btn-secondary" id="cancel-delete-btn">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script id="app-script">
+    // API base URL
+    const API_URL = 'http://localhost:5000/api/products';
+    
+    // State variables
+    let currentPage = 1;
+    let productsPerPage = 20;
+    let products = [];
+    let isEditMode = false;
+    let currentProductId = null;
+    let totalProducts = 0;
+    let totalPages = 1;
+    
+    // DOM elements
+    const productsView = document.getElementById('products-view');
+    const productFormView = document.getElementById('product-form-view');
+    const searchInput = document.getElementById('search-input');
+    const productsTable = document.getElementById('products-table');
+    const paginationElement = document.getElementById('pagination');
+    const addProductBtn = document.getElementById('add-product-btn');
+    const productForm = document.getElementById('product-form');
+    const formTitle = document.getElementById('form-title');
+    const productIdInput = document.getElementById('product-id');
+    const codeInput = document.getElementById('code');
+    const nameInput = document.getElementById('name');
+    const categoryInput = document.getElementById('category');
+    const priceInput = document.getElementById('price');
+    const imageUrlInput = document.getElementById('image-url');
+    const imagePreview = document.getElementById('image-preview');
+    const stockInput = document.getElementById('stock');
+    const availableInput = document.getElementById('available');
+    const saveBtn = document.getElementById('save-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const deleteBtn = document.getElementById('delete-btn');
+    const deleteModal = document.getElementById('delete-modal');
+    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+    const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+    
+    // Initialize the application
+    function init() {
+      // Add event listeners
+      addProductBtn.addEventListener('click', showProductForm);
+      cancelBtn.addEventListener('click', showProductsView);
+      deleteBtn.addEventListener('click', showDeleteModal);
+      confirmDeleteBtn.addEventListener('click', deleteProduct);
+      cancelDeleteBtn.addEventListener('click', hideDeleteModal);
+      searchInput.addEventListener('input', handleSearch);
+      productForm.addEventListener('submit', saveProduct);
+      imageUrlInput.addEventListener('input', updateImagePreview);
+      
+      // Load products
+      fetchProducts();
+    }
+    
+    // API functions
+    async function fetchProducts(page = 1, limit = productsPerPage) {
+      try {
+        const response = await axios.get(`${API_URL}?page=${page}&limit=${limit}`);
+        products = response.data.products;
+        totalProducts = response.data.total;
+        totalPages = response.data.pages;
+        currentPage = response.data.currentPage;
+        
+        renderProducts();
+        renderPagination();
+      } catch (error) {
+        handleApiError(error, 'cargar los productos');
+      }
+    }
+    
+    async function getProductById(id) {
+      try {
+        const response = await axios.get(`${API_URL}/${id}`);
+        return response.data;
+      } catch (error) {
+        handleApiError(error, 'cargar el producto');
+        return null;
+      }
+    }
+    
+    async function createProduct(productData) {
+      try {
+        const response = await axios.post(API_URL, productData);
+        showToast('Producto creado con éxito', 'success');
+        return response.data;
+      } catch (error) {
+        handleApiError(error, 'crear el producto');
+        return null;
+      }
+    }
+    
+    async function updateProduct(id, productData) {
+      try {
+        const response = await axios.put(`${API_URL}/${id}`, productData);
+        showToast('Producto actualizado con éxito', 'success');
+        return response.data;
+      } catch (error) {
+        handleApiError(error, 'actualizar el producto');
+        return null;
+      }
+    }
+    
+    async function deleteProductById(id) {
+      try {
+        await axios.delete(`${API_URL}/${id}`);
+        showToast('Producto eliminado con éxito', 'success');
+        return true;
+      } catch (error) {
+        handleApiError(error, 'eliminar el producto');
+        return false;
+      }
+    }
+    
+    // Handle API errors
+    function handleApiError(error, action) {
+      let message = `Error al ${action}`;
+      
+      if (error.response) {
+        if (error.response.data && error.response.data.error) {
+          message = error.response.data.error;
+        } else if (error.response.status === 400) {
+          message = 'Datos inválidos';
+        } else if (error.response.status === 404) {
+          message = 'Recurso no encontrado';
+        } else if (error.response.status === 409) {
+          message = 'El código del producto ya existe';
+        }
+      }
+      
+      showToast(message, 'error');
+    }
+    
+    // UI Rendering Functions
+    function renderProducts() {
+      const tbody = productsTable.querySelector('tbody');
+      tbody.innerHTML = '';
+      
+      if (products.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center;">No se encontraron productos</td>
+          </tr>
+        `;
+        return;
+      }
+      
+      products.forEach(product => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${product.code}</td>
+          <td>${product.name}</td>
+          <td>${product.category}</td>
+          <td>$${product.price.toFixed(2)}</td>
+          <td>${product.stock}</td>
+          <td>${product.available ? '<i class="fas fa-check text-success"></i>' : '<i class="fas fa-times text-danger"></i>'}</td>
+          <td>
+            ${product.imageUrl ? 
+              `<img src="${product.imageUrl}" alt="${product.name}" class="thumbnail">` : 
+              '<span>Sin imagen</span>'}
+          </td>
+        `;
+        
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', () => editProduct(product._id));
+        
+        tbody.appendChild(row);
+      });
+    }
+    
+    function renderPagination() {
+      paginationElement.innerHTML = '';
+      
+      if (totalPages <= 1) {
+        return;
+      }
+      
+      // Previous button
+      if (currentPage > 1) {
+        const prevButton = document.createElement('button');
+        prevButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        prevButton.addEventListener('click', () => {
+          fetchProducts(currentPage - 1);
+        });
+        paginationElement.appendChild(prevButton);
+      }
+      
+      // Page buttons
+      for (let i = 1; i <= totalPages; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.textContent = i;
+        if (i === currentPage) {
+          pageButton.classList.add('active');
+        }
+        pageButton.addEventListener('click', () => {
+          fetchProducts(i);
+        });
+        paginationElement.appendChild(pageButton);
+      }
+      
+      // Next button
+      if (currentPage < totalPages) {
+        const nextButton = document.createElement('button');
+        nextButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        nextButton.addEventListener('click', () => {
+          fetchProducts(currentPage + 1);
+        });
+        paginationElement.appendChild(nextButton);
+      }
+    }
+    
+    // Form handling
+    function showProductForm() {
+      isEditMode = false;
+      formTitle.textContent = 'Nuevo Producto';
+      productForm.reset();
+      imagePreview.style.display = 'none';
+      deleteBtn.style.display = 'none';
+      productsView.style.display = 'none';
+      productFormView.style.display = 'block';
+    }
+    
+    function showProductsView() {
+      productFormView.style.display = 'none';
+      productsView.style.display = 'block';
+      fetchProducts(currentPage);
+    }
+    
+    async function editProduct(id) {
+      isEditMode = true;
+      currentProductId = id;
+      formTitle.textContent = 'Editar Producto';
+      deleteBtn.style.display = 'block';
+      
+      const product = await getProductById(id);
+      if (product) {
+        productIdInput.value = product._id;
+        codeInput.value = product.code;
+        nameInput.value = product.name;
+        categoryInput.value = product.category;
+        priceInput.value = product.price;
+        imageUrlInput.value = product.imageUrl || '';
+        if (product.imageUrl) {
+          imagePreview.src = product.imageUrl;
+          imagePreview.style.display = 'block';
+        } else {
+          imagePreview.style.display = 'none';
+        }
+        stockInput.value = product.stock;
+        availableInput.checked = product.available;
+        
+        productsView.style.display = 'none';
+        productFormView.style.display = 'block';
+      }
+    }
+    
+    async function saveProduct(e) {
+      e.preventDefault();
+      
+      if (!validateForm()) {
+        return;
+      }
+      
+      const productData = {
+        code: codeInput.value,
+        name: nameInput.value,
+        category: categoryInput.value,
+        price: parseFloat(priceInput.value),
+        imageUrl: imageUrlInput.value.trim() || null, // Guardar como null si está vacío
+        stock: parseInt(stockInput.value),
+        available: availableInput.checked
+      };
+      
+      if (isEditMode) {
+        await updateProduct(currentProductId, productData);
+      } else {
+        await createProduct(productData);
+      }
+      
+      showProductsView();
+    }
+    
+    // ==============================
+    // VALIDACIÓN ACTUALIZADA (IMAGEN OPCIONAL)
+    // ==============================
+    function validateForm() {
+      let isValid = true;
+      
+      // Clear previous error messages
+      document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+      document.querySelectorAll('.form-control').forEach(el => el.classList.remove('error'));
+      
+      // Validate code
+      if (!codeInput.value.trim()) {
+        document.getElementById('code-error').textContent = 'El código es requerido';
+        codeInput.classList.add('error');
+        isValid = false;
+      }
+      
+      // Validate name
+      if (!nameInput.value.trim()) {
+        document.getElementById('name-error').textContent = 'El nombre es requerido';
+        nameInput.classList.add('error');
+        isValid = false;
+      }
+      
+      // Validate category
+      if (!categoryInput.value) {
+        document.getElementById('category-error').textContent = 'La categoría es requerida';
+        categoryInput.classList.add('error');
+        isValid = false;
+      }
+      
+      // Validate price
+      if (!priceInput.value || isNaN(parseFloat(priceInput.value)) || parseFloat(priceInput.value) < 0) {
+        document.getElementById('price-error').textContent = 'Ingrese un precio válido';
+        priceInput.classList.add('error');
+        isValid = false;
+      }
+      
+      // Validate stock
+      if (!stockInput.value || isNaN(parseInt(stockInput.value)) || parseInt(stockInput.value) < 0) {
+        document.getElementById('stock-error').textContent = 'Ingrese un stock válido';
+        stockInput.classList.add('error');
+        isValid = false;
+      }
+      
+      // Validar imagen solo si se proporciona una URL
+      const imageUrl = imageUrlInput.value.trim();
+      if (imageUrl && !isValidUrl(imageUrl)) {
+        document.getElementById('image-url-error').textContent = 'URL de imagen inválida';
+        imageUrlInput.classList.add('error');
+        isValid = false;
+      }
+      
+      return isValid;
+    }
+    
+    // Función auxiliar para validar URLs
+    function isValidUrl(string) {
+      try {
+        new URL(string);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    
+    function updateImagePreview() {
+      const imageUrl = imageUrlInput.value.trim();
+      if (imageUrl) {
+        imagePreview.src = imageUrl;
+        imagePreview.style.display = 'block';
+        imagePreview.onerror = () => {
+          imagePreview.style.display = 'none';
+          document.getElementById('image-url-error').textContent = 'URL de imagen inválida';
+          imageUrlInput.classList.add('error');
+        };
+        imagePreview.onload = () => {
+          document.getElementById('image-url-error').textContent = '';
+          imageUrlInput.classList.remove('error');
+        };
+      } else {
+        imagePreview.style.display = 'none';
+        // Limpiar errores si el campo está vacío
+        document.getElementById('image-url-error').textContent = '';
+        imageUrlInput.classList.remove('error');
+      }
+    }
+    
+    // Delete handling
+    function showDeleteModal() {
+      deleteModal.style.display = 'flex';
+    }
+    
+    function hideDeleteModal() {
+      deleteModal.style.display = 'none';
+    }
+    
+    async function deleteProduct() {
+      if (currentProductId) {
+        const success = await deleteProductById(currentProductId);
+        if (success) {
+          hideDeleteModal();
+          showProductsView();
+        }
+      }
+    }
+    
+    // FUNCIÓN DE BÚSQUEDA
+    function handleSearch() {
+      const searchTerm = searchInput.value.trim();
+      
+      if (searchTerm.length === 0) {
+        fetchProducts();
+        return;
+      }
+
+      const query = new URLSearchParams({
+        code: searchTerm,
+        name: searchTerm
+      }).toString();
+      
+      searchProducts(query);
+    }
+
+    async function searchProducts(query) {
+      try {
+        const response = await axios.get(`${API_URL}/search?${query}`);
+        products = response.data;
+        
+        currentPage = 1;
+        renderProducts();
+        paginationElement.innerHTML = '';
+        
+        if (products.length === 0) {
+          showToast('No se encontraron productos', 'info');
+        }
+      } catch (error) {
+        handleApiError(error, 'buscar productos');
+      }
+    }
+    
+    // Toast notification
+    function showToast(message, type = 'success') {
+      Toastify({
+        text: message,
+        duration: 3000,
+        close: true,
+        gravity: "top",
+        position: "right",
+        backgroundColor: type === 'success' ? "#4CAF50" : "#f44336",
+      }).showToast();
+    }
+    
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
